@@ -1,6 +1,8 @@
 import pandas as pd
 import sqlite3
 import streamlit as st
+import hmac
+
 from openai import OpenAI
 import re
 
@@ -12,6 +14,57 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+def check_password():
+    """Returns `True` if the user had the correct password."""
+
+    def password_entered():
+        """Checks whether a password entered by the user is correct."""
+        # Use hmac for secure password comparison (protects against timing attacks)
+        if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
+            st.session_state["password_correct"] = True
+            del st.session_state["password"]  # Don't store the password
+        else:
+            st.session_state["password_correct"] = False
+
+    # Return True if the password is validated
+    if st.session_state.get("password_correct", False):
+        return True
+
+    # Show input for password
+    st.markdown(
+        """
+        <style>
+        div[data-testid="stForm"] {
+            background-color: #f0f7fa;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+            direction: rtl;
+            text-align: right;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    with st.form("password_form"):
+        st.markdown("<h2 style='text-align: right;'>ברוכים הבאים למערכת</h2>", unsafe_allow_html=True)
+        st.text_input(
+            "אנא הכנס סיסמא",
+            type="password",
+            key="password"
+        )
+        submit = st.form_submit_button("כניסה", use_container_width=True)
+        if submit:
+            password_entered()
+
+    if "password_correct" in st.session_state:
+        if not st.session_state["password_correct"]:
+            st.error("סיסמא שגויה, נסה שנית.")
+
+    return False
 # Create custom CSS for better styling
 st.markdown(
     """
@@ -913,6 +966,8 @@ def main():
     """,
         unsafe_allow_html=True,
     )
+    if not check_password():
+        st.stop()
 
     # Language toggle
     # col1, col2 = st.columns([4, 1])
