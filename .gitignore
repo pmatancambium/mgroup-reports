@@ -1,0 +1,22 @@
+reports.db
+xls_header_extractor.py
+test.py
+
+# Database file
+reports.db
+*.db
+
+# Python virtual environment
+venv/
+.venv/
+env/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+.streamlit
+temp/
+
